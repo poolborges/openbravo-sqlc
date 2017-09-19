@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+    <action>
+        <actionName>CUSTOM-exec:java</actionName>
+        <displayName>exec:java</displayName>
+        <goals>
+            <goal>exec:java</goal>
+        </goals>
+    </action>
+    <action>
+        <actionName>CUSTOM-package uber-jar</actionName>
+        <displayName>package uber-jar</displayName>
+        <goals>
+            <goal>package</goal>
+        </goals>
+        <activatedProfiles>
+            <activatedProfile>uber-jar</activatedProfile>
+        </activatedProfiles>
+    </action>
+</actions>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ 
+<SqlClass name="SakilaActor" package="org.openbravo.howto">
+    <SqlClassComment>Example for a sqlc generated class</SqlClassComment>
+    <SqlMethod name="selectAllActor" type="preparedStatement" return="multiple">
+        <Sql>
+            SELECT actor_id, first_name, last_name, last_update FROM actor
+        </Sql>
+    </SqlMethod>
+    
+    <SqlMethod name="selectActorByMovieTitle" type="preparedStatement" return="multiple">
+        <Sql>
+            SELECT actor.* FROM actor
+            INNER JOIN film_actor ON film_actor.actor_id = actor.actor_id
+            INNER JOIN film ON film.film_id = film_actor.film_id
+            WHERE film.title = ?;
+        </Sql>
+        <Parameter name="movieTitle"/>
+    </SqlMethod>
+</SqlClass>

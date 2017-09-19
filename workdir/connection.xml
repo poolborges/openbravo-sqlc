@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<data-base>
+    <!--
+    <connection name="myPool" type="pool" 
+                driver="sun.jdbc.odbc.JdbcOdbcDriver" 
+                URL="jdbc:odbc:tutorial">
+    </connection>
+    -->
+    <connection name="myPool" type="pool" 
+                driver="org.sqlite.JDBC" 
+                URL="jdbc:sqlite:Sakila.sqlite3">
+    </connection>
+</data-base> 

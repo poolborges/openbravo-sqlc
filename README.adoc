@@ -1,0 +1,104 @@
+= Openbravo SQLC (PB Fork) 
+Paulo Borges (C);
+:revnumber: {version}
+:revdate: {localdate}
+:toc: 
+:toc-placement!:
+:sectnums:                                      
+:toclevels: 4
+:toc-title: Indice
+:experimental:                                                      
+:description:                            
+:keywords:                                              
+:imagesdir: ./img 	
+
+NOTE: This is a fork of Openbravo SqlC
+
+toc::[]
+
+[[doc.about]]
+== About
+This project was part of Openbravo code (src-core)
+
+
+== How to use 
+
+[source, bash]
+----
+java org.openbravo.data.Sqlc [connection.xml] [fileTermination] [sourceDir] [destinyDir] [write_txt_files] [timeout]
+----
+
+=== Advance Usage 
+-Dsqlc.listOfFiles=SakilaActor.xml,SakilaFilms.xml
+-Dsqlc.queryExecutionStrategy=
+
+
+=== XML Entities
+
+* SqlClass
+* SqlClassComment
+* SqlMethod
+* SqlMethodComment
+* Sql
+* Parameter
+
+
+=== XML SqlClass Attribute
+
+* name 
+* accessModifier
+* package
+
+
+=== XML SqlMethod Attribute
+
+* type (sql.sqlType)
+** constant
+** preparedStatement
+** callableStatement
+** statement
+* return (sql.sqlReturn)
+** STRING
+** BOOLEAN
+** DATE
+** SINGLE
+** MULTIPLE
+** SCROLLABLE
+** ROWCOUNT
+** SEQUENCE
+** OBJECT
+
+
+
+=== package 
+Não esta sendo o directorio correcto respeitando a package, ou seja, as classe (bla..bla..)
+
+
+=== Flow
+.sql flow diagram
+[source]
+----
+ini()
+listDir()
+    parseSqlFile()
+
+if()
+    getDirectories()
+----
+
+
+== maven plugin 
+
+* default input directory: src/main/resources
+* Default outpuy directory: target/generated-sources
+* groupId: com.poolborges.maven
+* artifactId: maven-plugin-sqlc
+
+
+[[doc.reference]]
+== Reference
+
+* https://sourceforge.net/p/openbravo/code/ci/default/tree/src-core[Openbravo core]
+* http://wiki.openbravo.com/wiki/ERP/2.50/Developers_Guide/Concepts/SQLC
+* http://wiki.openbravo.com/wiki/SQLC
+* http://docs.huihoo.com/openbravo/sqlc_tutorial.pdf

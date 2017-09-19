@@ -33,7 +33,9 @@ java org.openbravo.data.Sqlc [connection.xml] [fileTermination] [sourceDir] [des
 -Dsqlc.queryExecutionStrategy=
 
 
-=== XML Entities
+== SQLC XML Schema
+
+=== SQLC XML Tags
 
 * SqlClass
 * SqlClassComment
@@ -43,14 +45,14 @@ java org.openbravo.data.Sqlc [connection.xml] [fileTermination] [sourceDir] [des
 * Parameter
 
 
-=== XML SqlClass Attribute
+=== SqlClass Attribute
 
 * name 
 * accessModifier
 * package
 
 
-=== XML SqlMethod Attribute
+=== SqlMethod Attribute
 
 * type (sql.sqlType)
 ** constant
@@ -70,26 +72,42 @@ java org.openbravo.data.Sqlc [connection.xml] [fileTermination] [sourceDir] [des
 
 
 
-=== package 
-Não esta sendo o directorio correcto respeitando a package, ou seja, as classe (bla..bla..)
+== TODO 
+
+* Não esta sendo o directorio correcto respeitando a package, ou seja, as classe (bla..bla..)
 
 
 === Flow
-.sql flow diagram
+
+.SQLC Current flow diagram
 [source]
 ----
-ini()
-listDir()
-    parseSqlFile()
+init();
 
-if()
-    getDirectories()
+listDir(){
+    parseSqlFile();
+}
+----
+
+.SQLC Future flow diagram
+[source]
+----
+setDefaultOptions();
+parseCLIOptions();
+processInputDirectory(){
+    //1 - Iterate on all subdirectory. and search for every FILE that match inputFilePrefix/*.xsql
+    //3 - validateXsql(File); validateXsql(String);
+    //2 - XsqlEntity parseXsqlFile() XsqlException: Malformatted XSQL, Wrapper ERROR about database, table, field, etc
+    //3 - generateJavaCode(XsqlEntity);
+    
+}
+
 ----
 
 
-== maven plugin 
+=== TODO maven plugin
 
-* default input directory: src/main/resources
+* Default input directory: src/main/resources
 * Default outpuy directory: target/generated-sources
 * groupId: com.poolborges.maven
 * artifactId: maven-plugin-sqlc

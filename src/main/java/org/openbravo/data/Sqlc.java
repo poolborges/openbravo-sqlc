@@ -52,11 +52,11 @@ import org.xml.sax.helpers.DefaultHandler;
 public class Sqlc extends DefaultHandler {
     
     
-    private static String LOG4J_CONFIGFILE = "log4j.lcf";
-    private static String SQLC_CONNECTION_FILE_DEFAULT = "connection.properties";
-    private static String SQLC_INPUT_FILE_FILTER_DEFAULT = ".xml";
-    private static String SQLC_INPUT_DIRECTORY_DEFAULT = "./workdir/input";
-    private static String SQLC_OUTPUT_DIRECTORY_DEFAULT = "./workdir/output";
+    private static String LOG4J_CONFIGFILE = "./workdir/log4j.lcf";
+    private static String SQLC_CONNECTION_FILE_DEFAULT = "./workdir/connection.properties"; //"connection.xml";
+    private static String SQLC_INPUT_FILE_FILTER_DEFAULT = ".xsql";
+    private static String SQLC_INPUT_DIRECTORY_DEFAULT = "./workdir/xsql";
+    private static String SQLC_OUTPUT_DIRECTORY_DEFAULT = "./target/generated-sources"; //"./workdir/output";
 
     private static final String VERSION = "V1.O00-1";
     String sqlcName;
@@ -102,9 +102,13 @@ public class Sqlc extends DefaultHandler {
     static Logger log4j = Logger.getLogger(Sqlc.class); // log4j
     private static boolean includeQueryTimeOut;
     private boolean sessionInfoImported;
+    private static boolean excludeInputDirFromJavaDir = true;
 
     private List<String> scrollableFunctionNames = new ArrayList<String>();
     private boolean hasCountField;
+    
+    private static String outputDir;
+    private static String sourceDir;
 
     private Sqlc() {
         init();
@@ -124,8 +128,7 @@ public class Sqlc extends DefaultHandler {
 
     public static void main(String argv[]) throws Exception {
         PropertyConfigurator.configure(LOG4J_CONFIGFILE);
-        String sourceDir;
-        String outputDir;
+
         boolean boolFilter;
         String fileTerminationFilter;
         DirFilter dirFilter = null;
@@ -139,12 +142,12 @@ public class Sqlc extends DefaultHandler {
         final Sqlc sqlc = new Sqlc();
         final XMLReader parser = new SAXParser();
 
-        String strFileConnection = "connection.properties"; //"connection.xml";
+        String strFileConnection = SQLC_CONNECTION_FILE_DEFAULT;
         fileTerminationFilter = SQLC_INPUT_FILE_FILTER_DEFAULT;
         sourceDir = SQLC_INPUT_DIRECTORY_DEFAULT;
-        outputDir = "./target/generated-sources";
-        sqlc.writeTxtFiles = true;
-        includeDirectories = null;
+        outputDir = SQLC_OUTPUT_DIRECTORY_DEFAULT;
+        sqlc.writeTxtFiles = false;
+        includeDirectories = null; //new ArrayList<String>(Arrays.asList(SQLC_INPUT_DIRECTORY_DEFAULT)); //Excluse input dir name from output
         includeQueryTimeOut = false;
         boolFilter = true; // there always must be a termination
 
@@ -212,18 +215,18 @@ public class Sqlc extends DefaultHandler {
             queryWithOptionalParameterTypeArgument = true;
         }
 
-        final File path = new File(sourceDir);
-        if (!path.exists()) {
+        final File inputDirectoryFile = new File(sourceDir);
+        if (!inputDirectoryFile.exists()) {
             log4j.error("Input Directory does not exist: " + sourceDir);
             return;
         }
-        final File fileFin = new File(outputDir);
-        if (!fileFin.exists()) {
+        final File outputDirectoryFile = new File(outputDir);
+        if (!outputDirectoryFile.exists()) {
             log4j.error("Output Directory does not exist: " + outputDir);
             return;
         }
-        listDir(path, boolFilter, dirFilter, sqlc, parser, 
-                fileTerminationFilter, fileFin, (includeDirectories == null), "", 0);
+        listDir(inputDirectoryFile, boolFilter, dirFilter, sqlc, parser, 
+                fileTerminationFilter, outputDirectoryFile, (includeDirectories == null), "", 0);
 
         sqlc.closeConnection();
 
@@ -364,10 +367,20 @@ public class Sqlc extends DefaultHandler {
         try {
 
             String parentDir = fileParsing.getParent().replace("\\", "/");
-            // In case includeDirectories has value remove parent from path to
+            
+            if (log4j.isDebugEnabled()) {
+                log4j.debug("ParentDir:" + parentDir + "; Parent:" + parent);
+            }
+            
+            // In case includeDirectories has value remove parent from inputDirectoryFile to
             // keep clean the package
             if (includeDirectories != null && parentDir.startsWith(parent)) {
                 parentDir = parentDir.substring(parent.length());
+            }
+            
+            String sourceDirSanit = sourceDir.replace("\\", "/");
+            if(excludeInputDirFromJavaDir == true && parentDir.startsWith(sourceDirSanit)){
+                parentDir = parentDir.substring(sourceDirSanit.length());
             }
 
             final File dirJava = new File(fileFin, parentDir);
@@ -377,6 +390,9 @@ public class Sqlc extends DefaultHandler {
             dirJava.mkdirs();
             javaFileName = TransformaNombreFichero(strFileWithoutTermination);
             final File fileJava = new File(dirJava, javaFileName + ".java");
+            if (log4j.isDebugEnabled()) {
+                log4j.debug("Create Java file at: " + fileJava);
+            }
             File fileTxt = null;
             if (sqlc.writeTxtFiles) {
                 fileTxt = new File(fileParsing.getParent(), strFileWithoutTermination + ".txt");

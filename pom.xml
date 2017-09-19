@@ -156,6 +156,8 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
+            
+            <!-- TODO this Plugin configuration is not working yet -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -170,12 +172,12 @@
                 <configuration>
                     <mainClass>org.openbravo.data.Sqlc</mainClass>
                     <!-- optional -->
-                    <workingDirectory>./</workingDirectory>
+                    <workingDirectory>.\</workingDirectory>
                     <arguments>
-                        <argument>connection.xml</argument>
+                        <argument>workdir\connection.properties</argument>
                         <argument>.xsql</argument>
-                        <argument>.</argument>
-                        <argument>.</argument>
+                        <argument>workdir</argument>
+                        <argument>target\generated-sources</argument>
                         <argument>true</argument>
                     </arguments>
                 </configuration>

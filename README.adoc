@@ -20,6 +20,12 @@ toc::[]
 == About
 This project was part of Openbravo code (src-core)
 
+SQLC (SQL Compiler) 
+is a utility used to avoid the repetitive task of writing Java classes to interact with the database. 
+The input is an XML file that contains standard SQL statements and the parameters used in the statements. 
+SQLC reads this file and generates a Java class that has all the code necessary to connect to the database, 
+execute the statement, read the record and create standard Java types as return for the methods. 
+
 
 == How to use 
 
@@ -28,7 +34,19 @@ This project was part of Openbravo code (src-core)
 java org.openbravo.data.Sqlc [connection.xml] [fileTermination] [sourceDir] [destinyDir] [write_txt_files] [timeout]
 ----
 
+== Main 
+
+
+|====
+|
+
+|org.openbravo.xmlEngine.XmlEngine
+|====
+
+== Bibliotecas
+
 === Advance Usage 
+
 -Dsqlc.listOfFiles=SakilaActor.xml,SakilaFilms.xml
 -Dsqlc.queryExecutionStrategy=
 

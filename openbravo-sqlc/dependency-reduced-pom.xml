@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>openbravo-sqlc-parent</artifactId>
+    <groupId>org.openbravo</groupId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.openbravo</groupId>
+  <artifactId>openbravo-sqlc</artifactId>
+  <name>OpenBravo :: SQLC</name>
+  <description>SqlC is a tool that builds a java class from a file with SQL statements.
+        Based on Openbravo version 3.0PR17Q2.2</description>
+  <url>https://github.com/poolborges/openbravo-sqlc</url>
+  <inceptionYear>2015</inceptionYear>
+  <profiles>
+    <profile>
+      <id>uber-jar</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>shade</goal>
+                </goals>
+                <configuration>
+                  <transformers>
+                    <transformer>
+                      <mainClass>org.openbravo.data.Sqlc</mainClass>
+                    </transformer>
+                  </transformers>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+  <dependencies>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>
+

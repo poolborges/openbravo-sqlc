@@ -29,10 +29,40 @@ execute the statement, read the record and create standard Java types as return 
 
 == How to use 
 
+.How to use command line
 [source, bash]
 ----
-java org.openbravo.data.Sqlc [connection.xml] [fileTermination] [sourceDir] [destinyDir] [write_txt_files] [timeout]
+java org.openbravo.data.Sqlc [fileProperties] [fileTermination] [sourceDir] [destinyDir] [write_txt_files] [timeout]
 ----
+
+.System Properties
+|====
+|Nome   |Values
+
+|sqlc.listOfFiles
+|sqlc.queryExecutionStrategy    |optimized
+|====
+
+
+.Property File 
+|====
+|Name
+
+|dateFormat.java
+|====
+
+
+.XML
+|====
+|
+|SqlClass
+|SqlClassComment
+|SqlMethod
+|Sql
+|SqlMethodComment
+|Field
+|====
+
 
 == Main 
 

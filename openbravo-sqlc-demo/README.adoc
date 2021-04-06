@@ -1,0 +1,7 @@
+= Demo 
+
+
+.Execute SqlC from commmand line with maven (mvn)
+----
+$ mvn exec:java -Dexec.mainClass="org.openbravo.data.Sqlc"
+----

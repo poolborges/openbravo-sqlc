@@ -18,7 +18,6 @@ import java.sql.SQLException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.servlet.ServletException;
 
 import org.openbravo.data.UtilSql;
 
@@ -34,12 +33,12 @@ public class RDBMSIndependent {
         if (totalOutParameters > 0) {
             int init = sql.indexOf("(");
             if (init == -1) {
-                throw new ServletException("Badly formed sql: " + sql);
+                throw new Exception("Badly formed sql: " + sql);
             }
             strSql.append(sql.substring(0, init + 1));
             int end = sql.lastIndexOf(")");
             if (end == -1) {
-                throw new ServletException("Badly formed sql: " + sql);
+                throw new Exception("Badly formed sql: " + sql);
             }
             boolean first = true;
             int count = 0;

@@ -14,7 +14,7 @@ package org.openbravo.utils;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.ServletException;
+import org.openbravo.exception.CryptoException;
 
 public class CryptoUtility {
 
@@ -43,7 +43,7 @@ public class CryptoUtility {
         }
     }
 
-    public static String encrypt(String value) throws ServletException {
+    public static String encrypt(String value) throws CryptoException {
         byte encString[];
         String clearText;
         clearText = value;
@@ -54,7 +54,7 @@ public class CryptoUtility {
             initCipher();
         }
         if (s_cipher == null) {
-            throw new ServletException("CryptoUtility.encrypt() - Can't load cipher");
+            throw new CryptoException("CryptoUtility.encrypt() - Can't load cipher");
         }
         String result = "";
         try {
@@ -62,12 +62,12 @@ public class CryptoUtility {
             encString = s_cipher.doFinal(clearText.getBytes());
             result = new String(org.apache.commons.codec.binary.Base64.encodeBase64(encString), "UTF-8");
         } catch (Exception ex) {
-            throw new ServletException("CryptoUtility.encrypt() - Can't init cipher", ex);
+            throw new CryptoException("CryptoUtility.encrypt() - Can't init cipher", ex);
         }
         return result;
     }
 
-    public static String decrypt(String value) throws ServletException {
+    public static String decrypt(String value) throws CryptoException {
         if (value == null) {
             return null;
         }
@@ -78,7 +78,7 @@ public class CryptoUtility {
             initCipher();
         }
         if (s_cipher == null || value == null || value.length() <= 0) {
-            throw new ServletException("CryptoUtility.decrypt() - Can't load cipher");
+            throw new CryptoException("CryptoUtility.decrypt() - Can't load cipher");
         }
         byte out[];
         byte decode[];
@@ -87,7 +87,7 @@ public class CryptoUtility {
             s_cipher.init(Cipher.DECRYPT_MODE, s_key, s_cipher.getParameters());
             out = s_cipher.doFinal(decode);
         } catch (Exception ex) {
-            throw new ServletException("CryptoUtility.decrypt() - Can't init cipher", ex);
+            throw new CryptoException("CryptoUtility.decrypt() - Can't init cipher", ex);
         }
         return new String(out);
     }

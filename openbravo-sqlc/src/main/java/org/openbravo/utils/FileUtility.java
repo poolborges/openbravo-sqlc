@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 
 /**
  * @author Fernando Iriazabal
@@ -32,7 +31,6 @@ public class FileUtility {
 
     private String dir;
     private String filename;
-    static Logger log4j = Logger.getLogger(FileUtility.class);
 
     public FileUtility() {
     }

@@ -21,18 +21,20 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
+
 import org.openbravo.exception.NoConnectionAvailableException;
 import org.openbravo.exception.PoolNotFoundException;
 
 public class JNDIConnectionProvider implements ConnectionProvider {
 
-    protected static Logger log4j = Logger.getLogger(JNDIConnectionProvider.class);
+    protected static Logger LOGGER = Logger.getLogger(JNDIConnectionProvider.class.getName());
     protected static Map<String, PoolInfo> pools = new HashMap<String, PoolInfo>();
     protected String defaultPoolName = "";
 
@@ -53,44 +55,44 @@ public class JNDIConnectionProvider implements ConnectionProvider {
     }
 
     public JNDIConnectionProvider(String file, boolean isRelative) throws PoolNotFoundException {
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("Creating JNDIConnectionProviderImpl from file " + file);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Creating JNDIConnectionProviderImpl from file " + file);
         }
 
         try {
             Properties properties = new Properties();
             properties.load(new FileInputStream(file));
             String poolName = properties.getProperty("bbdd.poolName", "myPool");
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("poolName: " + poolName);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("poolName: " + poolName);
             }
 
             String jndiResourceName = properties.getProperty("JNDI.resourceName");
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("jndiResourceName: " + jndiResourceName);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("jndiResourceName: " + jndiResourceName);
             }
             String dbSessionConfig = properties.getProperty("bbdd.sessionConfig");
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("dbSessionConfig: " + dbSessionConfig);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("dbSessionConfig: " + dbSessionConfig);
             }
             String rdbms = properties.getProperty("bbdd.rdbms");
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("rdbms: " + rdbms);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("rdbms: " + rdbms);
             }
 
             // Add the new pool to the list of available pools
             Context initctx = new InitialContext();
             Context ctx = (Context) initctx.lookup("java:/comp/env");
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("Connected to java:/comp/env");
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Connected to java:/comp/env");
             }
             DataSource ds = (DataSource) ctx.lookup(jndiResourceName);
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("Datasource retrieved from JNDI server. Resource " + jndiResourceName);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Datasource retrieved from JNDI server. Resource " + jndiResourceName);
             }
             pools.put(poolName, new PoolInfo(poolName, ds, rdbms, dbSessionConfig));
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("Added to pools");
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Added to pools");
             }
 
             // First defined pool is the default pool
@@ -101,22 +103,22 @@ public class JNDIConnectionProvider implements ConnectionProvider {
             // initialize the pool with dbSessionConfig
             Connection con = null;
             try {
-                log4j.info("Initializing connection...");
+                LOGGER.info("Initializing connection...");
                 con = ds.getConnection();
-                log4j.info(" Got connection" + con.toString());
+                LOGGER.info(" Got connection" + con.toString());
                 PreparedStatement pstmt = con.prepareStatement(dbSessionConfig);
-                log4j.debug("Prepared statement with query: " + dbSessionConfig);
+                LOGGER.finest("Prepared statement with query: " + dbSessionConfig);
                 pstmt.executeQuery();
-                log4j.debug("Connection initialized");
+                LOGGER.finest("Connection initialized");
             } finally {
                 if (con != null) {
                     con.close();
                 }
             }
-            log4j.debug("Created JNDI ConnectionProvider");
+            LOGGER.finest("Created JNDI ConnectionProvider");
 
         } catch (Exception e) {
-            log4j.error("Error creating JNDI connection", e);
+            LOGGER.log(Level.SEVERE,"Error creating JNDI connection", e);
             throw new PoolNotFoundException("Failed when creating database connections pool: "
                     + e.getMessage());
         }
@@ -192,12 +194,12 @@ public class JNDIConnectionProvider implements ConnectionProvider {
         if (poolName == null || poolName.equals("")) {
             throw new PoolNotFoundException("Can't get the pool. No pool name specified");
         }
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("connection requested");
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("connection requested");
         }
         Connection conn = getConnection(poolName);
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("connection established");
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("connection established");
         }
         return getPreparedStatement(conn, SQLPreparedStatement);
     }
@@ -209,16 +211,16 @@ public class JNDIConnectionProvider implements ConnectionProvider {
         }
         PreparedStatement ps = null;
         try {
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("preparedStatement requested");
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("preparedStatement requested");
             }
             ps = conn.prepareStatement(SQLPreparedStatement, ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("preparedStatement received");
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("preparedStatement received");
             }
         } catch (SQLException e) {
-            log4j.error("getPreparedStatement: " + SQLPreparedStatement + "\n" + e);
+            LOGGER.log(Level.SEVERE,"getPreparedStatement: " + SQLPreparedStatement + "\n" + e);
             releaseConnection(conn);
             throw e;
         }
@@ -247,7 +249,7 @@ public class JNDIConnectionProvider implements ConnectionProvider {
         try {
             cs = conn.prepareCall(SQLCallableStatement);
         } catch (SQLException e) {
-            log4j.error("getCallableStatement: " + SQLCallableStatement + "\n" + e);
+            LOGGER.log(Level.SEVERE,"getCallableStatement: " + SQLCallableStatement + "\n" + e);
             releaseConnection(conn);
             throw e;
         }
@@ -273,7 +275,7 @@ public class JNDIConnectionProvider implements ConnectionProvider {
         try {
             return (conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY));
         } catch (SQLException e) {
-            log4j.error("getStatement: " + e);
+            LOGGER.log(Level.SEVERE,"getStatement: " + e);
             releaseConnection(conn);
             throw e;
         }
@@ -289,7 +291,7 @@ public class JNDIConnectionProvider implements ConnectionProvider {
             preparedStatement.close();
             releaseConnection(conn);
         } catch (SQLException e) {
-            log4j.error("releasePreparedStatement: " + e);
+            LOGGER.log(Level.SEVERE,"releasePreparedStatement: " + e);
             releaseConnection(conn);
             throw e;
         }
@@ -305,7 +307,7 @@ public class JNDIConnectionProvider implements ConnectionProvider {
             callableStatement.close();
             releaseConnection(conn);
         } catch (SQLException e) {
-            log4j.error("releaseCallableStatement: " + e);
+            LOGGER.log(Level.SEVERE,"releaseCallableStatement: " + e);
             releaseConnection(conn);
             throw e;
         }
@@ -321,7 +323,7 @@ public class JNDIConnectionProvider implements ConnectionProvider {
             statement.close();
             releaseConnection(conn);
         } catch (SQLException e) {
-            log4j.error("releaseStatement: " + e);
+            LOGGER.log(Level.SEVERE,"releaseStatement: " + e);
             releaseConnection(conn);
             throw e;
         }

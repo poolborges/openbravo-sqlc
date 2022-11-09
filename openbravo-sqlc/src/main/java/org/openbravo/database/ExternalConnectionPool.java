@@ -19,8 +19,7 @@ package org.openbravo.database;
 
 import java.sql.Connection;
 import java.util.List;
-
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 
 /**
  * Abstract class that represents an external connection pool
@@ -28,7 +27,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class ExternalConnectionPool {
 
-    static Logger log = Logger.getLogger(ExternalConnectionPool.class);
+    static Logger log = Logger.getLogger(ExternalConnectionPool.class.getName());
     public static final String DEFAULT_POOL = "DEFAULT";
     public static final String READONLY_POOL = "RO";
 

@@ -33,9 +33,10 @@ import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+
 import org.apache.xerces.parsers.SAXParser;
 import org.openbravo.utils.DirFilter;
 import org.xml.sax.Attributes;
@@ -52,7 +53,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class Sqlc extends DefaultHandler {
     
     
-    private static String LOG4J_CONFIGFILE = "./workdir/log4j.lcf";
+    private static String LOGGER_CONFIGFILE = "./workdir/LOGGER.lcf";
     private static String SQLC_CONNECTION_FILE_DEFAULT = "./workdir/connection.properties"; //"connection.xml";
     private static String SQLC_INPUT_FILE_FILTER_DEFAULT = ".xsql";
     private static String SQLC_INPUT_DIRECTORY_DEFAULT = "./workdir/xsql";
@@ -99,7 +100,7 @@ public class Sqlc extends DefaultHandler {
     private static boolean queryWithOptionalParameterWithoutType = false;
     private static boolean queryWithOptionalParameterTypeArgument = false;
 
-    static Logger log4j = Logger.getLogger(Sqlc.class); // log4j
+    static Logger LOGGER = Logger.getLogger(Sqlc.class.getName()); // LOGGER
     private static boolean includeQueryTimeOut;
     private boolean sessionInfoImported;
     private static boolean excludeInputDirFromJavaDir = true;
@@ -127,7 +128,7 @@ public class Sqlc extends DefaultHandler {
     }
 
     public static void main(String argv[]) throws Exception {
-        PropertyConfigurator.configure(LOG4J_CONFIGFILE);
+        
 
 
         DirFilter dirFilter = null;
@@ -203,12 +204,12 @@ public class Sqlc extends DefaultHandler {
             files.addAll(Arrays.asList(listOfFiles.split(",")));
             dirFilter = new DirFilter(files);
         }
-        log4j.info("Directory source: " + sourceDir);
-        log4j.info("Directory destiny: " + outputDir);
-        log4j.info("File termination: " + fileTerminationFilter);
-        log4j.info("File connection: " + strFileConnection);
-        log4j.info("Write TXT Files: " + sqlc.writeTxtFiles);
-        log4j.info("Query timeout: " + includeQueryTimeOut);
+        LOGGER.info("Directory source: " + sourceDir);
+        LOGGER.info("Directory destiny: " + outputDir);
+        LOGGER.info("File termination: " + fileTerminationFilter);
+        LOGGER.info("File connection: " + strFileConnection);
+        LOGGER.info("Write TXT Files: " + sqlc.writeTxtFiles);
+        LOGGER.info("Query timeout: " + includeQueryTimeOut);
 
         sqlc.connect(strFileConnection);
 
@@ -221,12 +222,12 @@ public class Sqlc extends DefaultHandler {
 
         final File inputDirectoryFile = new File(sourceDir);
         if (!inputDirectoryFile.exists()) {
-            log4j.error("Input Directory does not exist: " + sourceDir);
+            LOGGER.log(Level.SEVERE,"Input Directory does not exist: " + sourceDir);
             return;
         }
         final File outputDirectoryFile = new File(outputDir);
         if (!outputDirectoryFile.exists()) {
-            log4j.error("Output Directory does not exist: " + outputDir);
+            LOGGER.log(Level.SEVERE,"Output Directory does not exist: " + outputDir);
             return;
         }
         listDir(inputDirectoryFile, boolFilter, dirFilter, sqlc, parser, 
@@ -235,7 +236,7 @@ public class Sqlc extends DefaultHandler {
         sqlc.closeConnection();
 
         if (errorNum > 0) {
-            log4j.error(errorNum + " errors found!");
+            LOGGER.log(Level.SEVERE,errorNum + " errors found!");
             System.exit(1); // exit with error
         }
 
@@ -282,16 +283,15 @@ public class Sqlc extends DefaultHandler {
             list = file.listFiles();
         }
         
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("List files from: "+file);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("List files from: "+file);
         }
         
         for (int i = 0; i < list.length; i++) {
             final File fileItem = list[i];
             if (fileItem.isDirectory()) {
-                if (log4j.isDebugEnabled()) {
-                    log4j
-                            .debug("DirectoryName: "
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST,"DirectoryName: "
                                     + fileItem.getName()
                                     + " ;parse: "
                                     + parse
@@ -323,8 +323,8 @@ public class Sqlc extends DefaultHandler {
                 }
             } else {
                 try {
-                    if (log4j.isDebugEnabled()) {
-                        log4j.debug(
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.finest(
                                 "FileName: "+fileItem.getName() 
                                 + " ;File.Parent: " + fileItem.getParent() 
                                 + " File.Name: " + fileItem.getName() 
@@ -334,7 +334,7 @@ public class Sqlc extends DefaultHandler {
                         parseSqlFile(fileItem, sqlc, parser, strFilter, fileFin, parent);
                     }
                 } catch (final IOException e) {
-                    log4j.error("IOException: ", e);
+                    LOGGER.log(Level.SEVERE,"IOException: ", e);
                 }
             }
         }
@@ -355,32 +355,32 @@ public class Sqlc extends DefaultHandler {
             File fileFin, String parent) {
         parent = parent.replace("\\", "/");
         final String strFileName = fileParsing.getName();
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("Parsing of " + strFileName);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Parsing of " + strFileName);
         }
         sqlc.init();
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("new Sql");
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("new Sql");
         }
         final int pos = strFileName.indexOf(strFilter);
         if (pos == -1) {
-            log4j.error("File " + strFileName + " don't have termination " + strFilter);
+            LOGGER.log(Level.SEVERE,"File " + strFileName + " don't have termination " + strFilter);
             return;
         }
         final String strFileWithoutTermination = strFileName.substring(0, pos);
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("File without termination: " + strFileWithoutTermination);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("File without termination: " + strFileWithoutTermination);
         }
         if (strFileWithoutTermination.equalsIgnoreCase("SQLC")) {
-            log4j.error("Name Sqlc not allowed for a file");
+            LOGGER.log(Level.SEVERE,"Name Sqlc not allowed for a file");
             return;
         }
         try {
 
             String parentDir = fileParsing.getParent().replace("\\", "/");
             
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("ParentDir: " + parentDir + "; Parent: " + parent);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("ParentDir: " + parentDir + "; Parent: " + parent);
             }
             
             // In case includeDirectories has value remove parent from inputDirectoryFile to
@@ -395,22 +395,22 @@ public class Sqlc extends DefaultHandler {
             }
 
             final File dirJava = new File(fileFin, parentDir);
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("parentDir: " + parentDir + " ;javadir: " + dirJava + " ;parent: " + parent);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("parentDir: " + parentDir + " ;javadir: " + dirJava + " ;parent: " + parent);
             }
             dirJava.mkdirs();
             javaFileName = TransformaNombreFichero(strFileWithoutTermination);
             final File fileJava = new File(dirJava, javaFileName + ".java");
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("Create Java file at: " + fileJava);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Create Java file at: " + fileJava);
             }
             File fileTxt = null;
             if (sqlc.writeTxtFiles) {
                 fileTxt = new File(fileParsing.getParent(), strFileWithoutTermination + ".txt");
             }
             if ((!fileJava.exists()) || (fileParsing.lastModified() > fileJava.lastModified())) {
-                if (log4j.isDebugEnabled()) {
-                    log4j.debug(" time file parsed: " + fileParsing.lastModified() + " time file java: "
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.finest(" time file parsed: " + fileParsing.lastModified() + " time file java: "
                             + fileParsing.lastModified());
                 }
                 final FileOutputStream resultsFile = new FileOutputStream(fileJava);
@@ -424,22 +424,22 @@ public class Sqlc extends DefaultHandler {
                     resultsFileTxt = new FileWriter(fileTxt);
                     sqlc.printWriterTxt = new PrintWriter(resultsFileTxt);
                 }
-                log4j.info("File: " + fileParsing + " \tprocessed");
+                LOGGER.info("File: " + fileParsing + " \tprocessed");
                 final java.util.Date date = new java.util.Date(); // there is date in
                 // java.sql.*
-                if (log4j.isDebugEnabled()) {
-                    log4j.debug("Time: " + date.getTime());
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.finest("Time: " + date.getTime());
                 }
 
                 sqlc.error = false;
                 try {
                     parser.parse(new InputSource(new FileReader(fileParsing)));
                 } catch (final IOException e) {
-                    log4j.error("Error parsing xsql file", e);
+                    LOGGER.log(Level.SEVERE,"Error parsing xsql file", e);
                 } catch (final SAXException e) {
-                    log4j.error("Error parsing xsql file", e);
+                    LOGGER.log(Level.SEVERE,"Error parsing xsql file", e);
                 } catch (final Exception e) {
-                    log4j.error("Error parsing xsql file", e);
+                    LOGGER.log(Level.SEVERE,"Error parsing xsql file", e);
                 }
                 if (!sqlc.first) {
                     sqlc.printEndClass();
@@ -472,12 +472,12 @@ public class Sqlc extends DefaultHandler {
                     }
                 }
             } else {
-                if (log4j.isDebugEnabled()) {
-                    log4j.debug("File: " + fileParsing + " \tskipped");
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.finest("File: " + fileParsing + " \tskipped");
                 }
             }
         } catch (final IOException e) {
-            log4j.error("Problem closing the file", e);
+            LOGGER.log(Level.SEVERE,"Problem closing the file", e);
         }
     }
 
@@ -498,11 +498,11 @@ public class Sqlc extends DefaultHandler {
             Attributes amap) throws SAXException {
         readBuffer();
         pushElement(qName);
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("Configuration: startElement is called: element  name=" + name);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Configuration: startElement is called: element  name=" + name);
         }
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("Configuration: startElement is called: element qName=" + qName);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Configuration: startElement is called: element qName=" + qName);
         }
         if (name.equals("SqlMethod")) {
             sql.sqlStatic = "true";
@@ -527,7 +527,7 @@ public class Sqlc extends DefaultHandler {
                     } else if (sql.sqlReturn.equalsIgnoreCase("OBJECT")) {
                         sql.executeType = "execute";
                     } else {
-                        log4j.error("return not permited");
+                        LOGGER.log(Level.SEVERE,"return not permited");
                     }
                 } else if (amap.getQName(i).equals("default")) {
                     sql.sqlDefaultReturn = amap.getValue(i);
@@ -592,8 +592,8 @@ public class Sqlc extends DefaultHandler {
                     strIgnoreValue = amap.getValue(i);
                 }
             }
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("Configuration: call to addParameter ");
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Configuration: call to addParameter ");
             }
             parameterSql = sql.addParameter(false, strName, strDefault, strInOut, strOptional, strAfter,
                     strText, strIgnoreValue);
@@ -622,22 +622,22 @@ public class Sqlc extends DefaultHandler {
     @Override
     public void endElement(java.lang.String uri, java.lang.String name, java.lang.String qName) throws SAXException { 
         readBuffer();
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("Configuration: call to endElement: " + name);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Configuration: call to endElement: " + name);
         }
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("(before pop) Element: " + strElement);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("(before pop) Element: " + strElement);
         }
         popElement();
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("(after pop) Element: " + strElement);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("(after pop) Element: " + strElement);
         }
         if (name.equals("SqlMethod")) {
             if (sql.sqlType.equals("constant")) {
                 try {
                     printFunctionConstant();
                 } catch (final IOException ex) {
-                    log4j.error("Error in printFunctionConstant", ex);
+                    LOGGER.log(Level.SEVERE,"Error in printFunctionConstant", ex);
                 }
             } else {
                 query();
@@ -646,13 +646,13 @@ public class Sqlc extends DefaultHandler {
                     try {
                         printInitClass();
                     } catch (final IOException ex) {
-                        log4j.error("Error in printInitClass", ex);
+                        LOGGER.log(Level.SEVERE,"Error in printInitClass", ex);
                     }
                 }
                 try {
                     printFunctionSql();
                 } catch (final IOException ex) {
-                    log4j.error("Error in printFunctionSql", ex);
+                    LOGGER.log(Level.SEVERE,"Error in printFunctionSql", ex);
                 }
             }
             sql = new Sql();
@@ -670,8 +670,8 @@ public class Sqlc extends DefaultHandler {
     private void readBuffer() {
         if (buffer != null) {
             final String strBuffer = buffer.toString();
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("Configuration(" + strElement + "): characters are  called: " + strBuffer);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Configuration(" + strElement + "): characters are  called: " + strBuffer);
             }
             if (strElement.equals("Sql")) {
                 sql.strSQL = strBuffer;
@@ -692,21 +692,21 @@ public class Sqlc extends DefaultHandler {
         try {
             File fileS = new File(file);
             if (!fileS.exists()) {
-                log4j.warn("File not found: " + file);
+                LOGGER.log(Level.WARNING,"File not found: " + file);
                 return;
             }
 
             properties.load(new FileInputStream(file));
             strDriver = properties.getProperty("bbdd.driver");
             if (strDriver == null) {
-                log4j.warn("bbdd.driver not found: " + strDriver);
+                LOGGER.log(Level.WARNING,"bbdd.driver not found: " + strDriver);
             }
             strURL = properties.getProperty("bbdd.url");
             strDBUser = properties.getProperty("bbdd.user");
             strDBPassword = properties.getProperty("bbdd.password");
             String rdbms = properties.getProperty("bbdd.rdbms");
 
-            log4j.warn("bbdd.driver: " + strDriver);
+            LOGGER.log(Level.WARNING,"bbdd.driver: " + strDriver);
 
             if (rdbms.equalsIgnoreCase("POSTGRE")) {
                 strURL += "/" + properties.getProperty("bbdd.sid");
@@ -721,26 +721,26 @@ public class Sqlc extends DefaultHandler {
                 queryExecutionStrategy = "optimized";
             }
         } catch (final IOException e) {
-            log4j.error("Error reading propery file", e);
+            LOGGER.log(Level.SEVERE,"Error reading propery file", e);
         }
 
-        log4j.info("QueryExecutionStrategy: " + queryExecutionStrategy);
-        log4j.info("Loading driver: " + strDriver);
+        LOGGER.info("QueryExecutionStrategy: " + queryExecutionStrategy);
+        LOGGER.info("Loading driver: " + strDriver);
         Class.forName(strDriver);
-        log4j.info("Driver loaded");
+        LOGGER.info("Driver loaded");
         if (strDBUser == null || strDBUser.equals("")) {
             connection = DriverManager.getConnection(strURL);
         } else {
             connection = DriverManager.getConnection(strURL, strDBUser, strDBPassword);
         }
-        log4j.info("connect made");
+        LOGGER.info("connect made");
     }
 
     private void closeConnection() {
         try {
             connection.close();
         } catch (final SQLException e) {
-            log4j.error("SQL error in closeConnection: " + e);
+            LOGGER.log(Level.SEVERE,"SQL error in closeConnection: " + e);
         }
     }
 
@@ -798,14 +798,14 @@ public class Sqlc extends DefaultHandler {
                 preparedStatement.close();
             }
             preparedStatement = connection.prepareStatement(querySql.toString());
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("Prepared statement: " + sql.strSQL);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Prepared statement: " + sql.strSQL);
             }
 
             //Commented because it is not a supported operation ResultSetMetaData rsmdPS =
             //preparedStatement.getMetaData (); // Get the number of columns in the result set int
-            //numColsPS = rsmdPS.getColumnCount (); if (log4j.isDebugEnabled())
-            //log4j.debug("number of columns in PS: " + numColsPS);
+            //numColsPS = rsmdPS.getColumnCount (); if (LOGGER.isLoggable(Level.FINEST))
+            //LOGGER.finest("number of columns in PS: " + numColsPS);
      
             int i = 1;
             for (final Parameter parameter : sql.vecParameter) {
@@ -816,26 +816,26 @@ public class Sqlc extends DefaultHandler {
                         || (parameter.boolOptional && (isParameterWithoutType && queryWithOptionalParameterWithoutType))) {
                     if (parameter.type == java.sql.Types.INTEGER) {
                         if (parameter.strDefault == null) {
-                            if (log4j.isDebugEnabled()) {
-                                log4j.debug("setInt: " + i + " value: 0");
+                            if (LOGGER.isLoggable(Level.FINEST)) {
+                                LOGGER.finest("setInt: " + i + " value: 0");
                             }
                             preparedStatement.setInt(i, 0);
                         } else {
-                            if (log4j.isDebugEnabled()) {
-                                log4j.debug("setInt: " + i + " value: " + parameter.strDefault);
+                            if (LOGGER.isLoggable(Level.FINEST)) {
+                                LOGGER.finest("setInt: " + i + " value: " + parameter.strDefault);
                             }
                             preparedStatement.setInt(i, Integer.parseInt(parameter.strDefault));
                         }
                         preparedStatement.setInt(i, Integer.parseInt(parameter.strDefault));
                     } else if (parameter.type == java.sql.Types.VARCHAR) {
                         if (parameter.strDefault == null) {
-                            if (log4j.isDebugEnabled()) {
-                                log4j.debug("setString: " + i + " value: null");
+                            if (LOGGER.isLoggable(Level.FINEST)) {
+                                LOGGER.finest("setString: " + i + " value: null");
                             }
                             preparedStatement.setNull(i, java.sql.Types.VARCHAR);
                         } else {
-                            if (log4j.isDebugEnabled()) {
-                                log4j.debug("setString: " + i + " value: " + parameter.strDefault);
+                            if (LOGGER.isLoggable(Level.FINEST)) {
+                                LOGGER.finest("setString: " + i + " value: " + parameter.strDefault);
                             }
                             preparedStatement.setString(i, parameter.strDefault);
                         }
@@ -851,19 +851,19 @@ public class Sqlc extends DefaultHandler {
                 rsmd = preparedStatement.getMetaData();
                 // Get the number of columns in the result set
                 numCols = rsmd.getColumnCount();
-                if (log4j.isDebugEnabled()) {
-                    log4j.debug("number of columns: " + numCols);
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.finest("number of columns: " + numCols);
                 }
             } // else
             // rsmd = preparedStatement.getMetaData ();
         } catch (final SQLException e) {
             error = true;
             errorNum++;
-            log4j.error("SQL error in query: " + querySql, e);
+            LOGGER.log(Level.SEVERE,"SQL error in query: " + querySql, e);
         } catch (final Exception e) {
             error = true;
             errorNum++;
-            log4j.error("Error in query.", e);
+            LOGGER.log(Level.SEVERE,"Error in query.", e);
         }
     }
 
@@ -877,7 +877,7 @@ public class Sqlc extends DefaultHandler {
         }
         out1.append("\n");
         out1.append("import java.sql.*;\n");
-        out1.append("import org.apache.log4j.Logger;\n");
+        out1.append("import org.apache.LOGGER.Logger;\n");
         out1.append("import org.openbravo.data.SqlcException;\n");
         out1.append("import org.openbravo.data.FieldProvider;\n");
         out1.append("import org.openbravo.database.ConnectionProvider;\n");
@@ -915,11 +915,11 @@ public class Sqlc extends DefaultHandler {
             out3.append(" ");
         }
         out3.append("class " + sqlcName + " implements FieldProvider {\n");
-        out3.append("static Logger log4j = Logger.getLogger(" + sqlcName + ".class);\n");
+        out3.append("static Logger LOGGER = Logger.getLogger(" + sqlcName + ".class);\n");
         try {
             // Display column headings
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("Number of columns: " + numCols);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Number of columns: " + numCols);
             }
             out3.append("  private String InitRecordNumber=\"0\";\n");
             for (int i = 1; i <= numCols; i++) {
@@ -934,7 +934,7 @@ public class Sqlc extends DefaultHandler {
                 out3.append(";\n");
             }
         } catch (final SQLException e) {
-            log4j.error("SQL Exception error:" + e);
+            LOGGER.log(Level.SEVERE,"SQL Exception error:" + e);
         }
         out3.append("\n");
         out3.append("  public String getInitRecordNumber() {\n");
@@ -945,8 +945,8 @@ public class Sqlc extends DefaultHandler {
         out3.append("  public String getField(String fieldName) {\n");
         try {
             // Display column headings
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("Number of columns in getField: " + numCols);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Number of columns in getField: " + numCols);
             }
             for (int i = 1; i <= numCols; i++) {
                 final String columnLabel = rsmd.getColumnLabel(i);
@@ -972,10 +972,10 @@ public class Sqlc extends DefaultHandler {
                 out3.append("      return " + fieldAdded.strName + ";\n");
             }
         } catch (final SQLException e) {
-            log4j.error("SQL Exception error:" + e);
+            LOGGER.log(Level.SEVERE,"SQL Exception error:" + e);
         }
         out3.append("   else {\n");
-        out3.append("     log4j.debug(\"Field does not exist: \" + fieldName);\n");
+        out3.append("     LOGGER.finest(\"Field does not exist: \" + fieldName);\n");
         out3.append("     return null;\n");
         out3.append("   }\n");
         out3.append(" }\n");
@@ -1031,7 +1031,7 @@ public class Sqlc extends DefaultHandler {
             toInsert += "      return false;\n";
             toInsert += "    } catch(SQLException e){\n";
             toInsert += "      errorOcurred = true;\n";
-            toInsert += "      log4j.error(\"Error calling jdbc next()\", e);\n";
+            toInsert += "      LOGGER.log(Level.SEVERE,\"Error calling jdbc next()\", e);\n";
             toInsert += "      throw new SqlcException(\"@CODE=\" + Integer.toString(e.getErrorCode()) + \"@\" + e.getMessage());\n";
             toInsert += "    }\n";
             toInsert += "  }\n";
@@ -1055,7 +1055,7 @@ public class Sqlc extends DefaultHandler {
             toInsert += "      }\n";
             toInsert += "    } catch(SQLException e){\n";
             toInsert += "      errorOcurred = true;\n";
-            toInsert += "      log4j.error(\"Error calling jdbc getter()\", e);\n";
+            toInsert += "      LOGGER.log(Level.SEVERE,\"Error calling jdbc getter()\", e);\n";
             toInsert += "      throw new SqlcException(\"@CODE=\" + Integer.toString(e.getErrorCode()) + \"@\" + e.getMessage());\n";
             toInsert += "    }\n";
             toInsert += "  }\n" + "\n";
@@ -1073,7 +1073,7 @@ public class Sqlc extends DefaultHandler {
             toInsert += "        internalConnProvider.releaseCommitConnection(internalConnection);\n";
             toInsert += "      }\n";
             toInsert += "    } catch (SQLException sqe) {\n";
-            toInsert += "      log4j.error(\"Exception on closing statement/resultset\", sqe);\n";
+            toInsert += "      LOGGER.log(Level.SEVERE,\"Exception on closing statement/resultset\", sqe);\n";
             toInsert += "    }\n";
             toInsert += "  }\n";
             toInsert += "\n";
@@ -1086,8 +1086,8 @@ public class Sqlc extends DefaultHandler {
     private void printTxtFile() {
         try {
             // Display column headings
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("Printing txt File: " + numCols);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Printing txt File: " + numCols);
             }
             for (int i = 1; i <= numCols; i++) {
                 printWriterTxt.print(rsmd.getColumnLabel(i));
@@ -1121,7 +1121,7 @@ public class Sqlc extends DefaultHandler {
             printWriterTxt.println("    return data;");
             printWriterTxt.println("  }");
         } catch (final SQLException e) {
-            log4j.error("SQL Exception error:" + e);
+            LOGGER.log(Level.SEVERE,"SQL Exception error:" + e);
         }
     }
 
@@ -1146,7 +1146,7 @@ public class Sqlc extends DefaultHandler {
                 }
             }
         } catch (final SQLException e) {
-            log4j.error("SQL Exception error:" + e);
+            LOGGER.log(Level.SEVERE,"SQL Exception error:" + e);
         }
         out2.append("    return object" + sqlcName + ";\n");
         out2.append("  }\n");
@@ -1207,7 +1207,7 @@ public class Sqlc extends DefaultHandler {
                         out2.append("    strSql = strSql + ((" + parameter.strName + "==null || "
                                 + parameter.strName + ".equals(\"\"))?\"\":" + parameter.strName + ");\n");
                     } else {
-                        log4j.error(sqlcName + "." + sql.sqlName + " position after = \"" + parameter.strAfter
+                        LOGGER.log(Level.SEVERE,sqlcName + "." + sql.sqlName + " position after = \"" + parameter.strAfter
                                 + "\" for optional parameter " + parameter.strName + " not found in xsql file!");
                     }
                 }
@@ -1400,12 +1400,12 @@ public class Sqlc extends DefaultHandler {
         out2.append("      instance.hasData = instance.result.isBeforeFirst();\n");
         out2.append("      instance.countRecord = 0;\n");
         out2.append("    } catch (SQLException e) {\n");
-        out2.append("      log4j.error(\"SQL error in query: \" + strSql + \"Exception:\" + e);\n");
+        out2.append("      LOGGER.log(Level.SEVERE,\"SQL error in query: \" + strSql + \"Exception:\" + e);\n");
         out2.append("      instance.errorOcurred = true;\n");
         out2.append("      throw new SqlcException(\"@CODE=\" + Integer.toString(e.getErrorCode()) + \"@\"\n");
         out2.append("          + e.getMessage());\n");
         out2.append("    } catch (Exception ex) {\n");
-        out2.append("      log4j.error(\"Exception in query: \" + strSql + \"Exception:\", ex);\n");
+        out2.append("      LOGGER.log(Level.SEVERE,\"Exception in query: \" + strSql + \"Exception:\", ex);\n");
         out2.append("      instance.errorOcurred = true;\n");
         out2.append("      throw new SqlcException(\"@CODE=@\" + ex.getMessage());\n");
         out2.append("    }\n");
@@ -1423,7 +1423,7 @@ public class Sqlc extends DefaultHandler {
         try {
             printSQLReadResultRow();
         } catch (final SQLException e) {
-            log4j.error("Error generating SQL Read Result part:", e);
+            LOGGER.log(Level.SEVERE,"Error generating SQL Read Result part:", e);
         }
 
         out2.append("      return object" + sqlcName + ";\n");
@@ -1490,10 +1490,10 @@ public class Sqlc extends DefaultHandler {
             out2.append("      }\n");
             out2.append("      resultKey.close();\n");
             out2.append("    } catch(SQLException e){\n");
-            out2.append("      log4j.error(\"SQL error in query: \" + strSql1 + \"Exception:\"+ e);\n");
+            out2.append("      LOGGER.log(Level.SEVERE,\"SQL error in query: \" + strSql1 + \"Exception:\"+ e);\n");
             out2.append("      throw new SqlcException(\"@CODE=\" + Integer.toString(e.getErrorCode()) + \"@\" + e.getMessage());\n");
             out2.append("    } catch(Exception ex){\n");
-            out2.append("      log4j.error(\"Exception in query: \" + strSql1 + \"Exception:\"+ ex);\n");
+            out2.append("      LOGGER.log(Level.SEVERE,\"Exception in query: \" + strSql1 + \"Exception:\"+ ex);\n");
             out2.append("      throw new SqlcException(\"@CODE=@\" + ex.getMessage());\n");
             out2.append("    } finally {\n");
             out2.append("      try {\n");
@@ -1576,7 +1576,7 @@ public class Sqlc extends DefaultHandler {
                     printSQLReadResultRow();
                 }
             } catch (final SQLException e) {
-                log4j.error("SQL Exception error:", e);
+                LOGGER.log(Level.SEVERE,"SQL Exception error:", e);
             }
             if (sql.sqlReturn.equalsIgnoreCase("MULTIPLE")) {
                 out2.append("        vector.addElement(object" + sqlcName + ");\n");
@@ -1614,10 +1614,10 @@ public class Sqlc extends DefaultHandler {
             }
         }
         out2.append("    } catch(SQLException e){\n");
-        out2.append("      log4j.error(\"SQL error in query: \" + strSql + \"Exception:\"+ e);\n");
+        out2.append("      LOGGER.log(Level.SEVERE,\"SQL error in query: \" + strSql + \"Exception:\"+ e);\n");
         out2.append("      throw new SqlcException(\"@CODE=\" + Integer.toString(e.getErrorCode()) + \"@\" + e.getMessage());\n");
         out2.append("    } catch(Exception ex){\n");
-        out2.append("      log4j.error(\"Exception in query: \" + strSql + \"Exception:\"+ ex);\n");
+        out2.append("      LOGGER.log(Level.SEVERE,\"Exception in query: \" + strSql + \"Exception:\"+ ex);\n");
         out2.append("      throw new SqlcException(\"@CODE=@\" + ex.getMessage());\n");
         out2.append("    } finally {\n");
         out2.append("      try {\n");
@@ -1678,16 +1678,16 @@ public class Sqlc extends DefaultHandler {
                 out2.append(paramsReceipt.toString());
             }
             out2.append("      } catch(SQLException e){\n");
-            out2.append("        log4j.error(\"SQL error in query: \" + strSql + \"Exception:\"+ e);\n");
+            out2.append("        LOGGER.log(Level.SEVERE,\"SQL error in query: \" + strSql + \"Exception:\"+ e);\n");
             out2.append("        throw new SqlcException(\"@CODE=\" + Integer.toString(e.getErrorCode()) + \"@\" + e.getMessage());\n");
             out2.append("      } catch(NoConnectionAvailableException ec){\n");
-            out2.append("        log4j.error(\"Connection error in query: \" + strSql + \"Exception:\"+ ec);\n");
+            out2.append("        LOGGER.log(Level.SEVERE,\"Connection error in query: \" + strSql + \"Exception:\"+ ec);\n");
             out2.append("        throw new SqlcException(\"@CODE=NoConnectionAvailable\");\n");
             out2.append("      } catch(PoolNotFoundException ep){\n");
-            out2.append("        log4j.error(\"Pool error in query: \" + strSql + \"Exception:\"+ ep);\n");
+            out2.append("        LOGGER.log(Level.SEVERE,\"Pool error in query: \" + strSql + \"Exception:\"+ ep);\n");
             out2.append("        throw new SqlcException(\"@CODE=NoConnectionAvailable\");\n");
             out2.append("      } catch(Exception ex){\n");
-            out2.append("        log4j.error(\"Exception in query: \" + strSql + \"Exception:\"+ ex);\n");
+            out2.append("        LOGGER.log(Level.SEVERE,\"Exception in query: \" + strSql + \"Exception:\"+ ex);\n");
             out2.append("        throw new SqlcException(\"@CODE=@\" + ex.getMessage());\n");
             out2.append("      }\n");
             out2.append("    }\n");
@@ -1722,8 +1722,8 @@ public class Sqlc extends DefaultHandler {
     // emits code to process a single row of a result
     private void printSQLReadResultRow() throws SQLException {
         for (int i = 1; i <= numCols; i++) {
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("Columna: " + rsmd.getColumnName(i) + " tipo: " + rsmd.getColumnType(i));
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("Columna: " + rsmd.getColumnName(i) + " tipo: " + rsmd.getColumnType(i));
             }
             if (rsmd.getColumnType(i) == java.sql.Types.TIMESTAMP || rsmd.getColumnType(i) == 91) {
                 out2.append("        object" + sqlcName + "."
@@ -1772,8 +1772,8 @@ public class Sqlc extends DefaultHandler {
         }
         
         
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("Create Method named: "+sql.sqlName);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Create Method named: "+sql.sqlName);
         }
         out2.append("  public ");
         if (sql.sqlStatic.equals("true")) {
@@ -1869,8 +1869,8 @@ public class Sqlc extends DefaultHandler {
             }
             out2.append("connectionProvider");
         }
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("Parameters numbering");
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Parameters numbering");
         }
         for (final Parameter parameter : sql.vecParameter) {
             if (sql.sqlStatic.equals("true")) {
@@ -2000,13 +2000,13 @@ public class Sqlc extends DefaultHandler {
         // Read properties file.
         final Properties properties = new Properties();
         try {
-            log4j.info("strFileProperties: " + strFileProperties);
+            LOGGER.info("strFileProperties: " + strFileProperties);
             properties.load(new FileInputStream(strFileProperties));
             javaDateFormat = properties.getProperty("dateFormat.java");
-            log4j.info("javaDateFormat: " + javaDateFormat);
+            LOGGER.info("javaDateFormat: " + javaDateFormat);
         } catch (final IOException e) {
             // catch possible io errors from readLine()
-            log4j.error("Error loading property file", e);
+            LOGGER.log(Level.SEVERE,"Error loading property file", e);
         }
     }
 }

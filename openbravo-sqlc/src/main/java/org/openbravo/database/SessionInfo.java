@@ -22,8 +22,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import org.apache.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class is used to maintain session information which will be used for
@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
  */
 public class SessionInfo {
 
-    private static final Logger log4j = Logger.getLogger(SessionInfo.class);
+    private static final Logger LOGGER = Logger.getLogger(SessionInfo.class.getName());
 
     public static final String IMPORT_ENTRY_PROCESS = "IE";
 
@@ -90,12 +90,12 @@ public class SessionInfo {
         Connection conn = sessionConnection.get();
         try {
             if (conn != null && !conn.isClosed()) {
-                log4j.debug("Close session's connection");
+                LOGGER.finest("Close session's connection");
                 conn.setAutoCommit(true);
                 conn.close();
             }
         } catch (SQLException e) {
-            log4j.error("Error closing sessionConnection", e);
+            LOGGER.log(Level.SEVERE,"Error closing sessionConnection", e);
         }
         sessionConnection.set(null);
     }
@@ -136,7 +136,7 @@ public class SessionInfo {
                     psCreate.execute();
                 }
             } catch (Exception e) {
-                log4j.error("Error initializating audit infrastructure", e);
+                LOGGER.log(Level.SEVERE,"Error initializating audit infrastructure", e);
             } finally {
                 releasePreparedStatement(psQuery);
                 releasePreparedStatement(psCreate);
@@ -157,8 +157,8 @@ public class SessionInfo {
      */
     static void setDBSessionInfo(Connection conn, boolean onlyIfChanged) {
         if (!isAuditActive || (onlyIfChanged && (changedInfo.get() == null || !changedInfo.get()))) {
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("No session info set isAuditActive: " + isAuditActive + " - changes in info: "
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("No session info set isAuditActive: " + isAuditActive + " - changes in info: "
                         + changedInfo.get());
             }
             return;
@@ -203,8 +203,8 @@ public class SessionInfo {
                 return;
             }
 
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("saving DB context info " + SessionInfo.getUserId() + " - "
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("saving DB context info " + SessionInfo.getUserId() + " - "
                         + SessionInfo.getSessionId() + " - " + SessionInfo.getProcessType() + " - "
                         + SessionInfo.getProcessId());
             }
@@ -227,7 +227,7 @@ public class SessionInfo {
                 changedInfo.set(false);
             }
         } catch (Exception e) {
-            log4j.error("Error setting audit info", e);
+            LOGGER.log(Level.SEVERE,"Error setting audit info", e);
         } finally {
             releasePreparedStatement(psCleanUp);
             releasePreparedStatement(psInsert);
@@ -261,10 +261,10 @@ public class SessionInfo {
                 return null;
             }
         } catch (SQLException e) {
-            log4j.error("Error checking connection", e);
+            LOGGER.log(Level.SEVERE,"Error checking connection", e);
             return null;
         }
-        log4j.debug("Reuse session's connection");
+        LOGGER.finest("Reuse session's connection");
         return conn;
     }
 
@@ -276,16 +276,16 @@ public class SessionInfo {
         PreparedStatement ps = null;
 
         try {
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("preparedStatement requested");
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("preparedStatement requested");
             }
             ps = conn.prepareStatement(SQLPreparedStatement, ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("preparedStatement received");
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("preparedStatement received");
             }
         } catch (SQLException e) {
-            log4j.error("getPreparedStatement: " + SQLPreparedStatement + "\n" + e);
+            LOGGER.log(Level.SEVERE,"getPreparedStatement: " + SQLPreparedStatement + "\n" + e);
             if (conn != null) {
                 try {
                     conn.setAutoCommit(true);
@@ -303,7 +303,7 @@ public class SessionInfo {
             try {
                 ps.close();
             } catch (Exception e) {
-                log4j.error("Error closing PreparedStatement", e);
+                LOGGER.log(Level.SEVERE,"Error closing PreparedStatement", e);
             }
         }
     }

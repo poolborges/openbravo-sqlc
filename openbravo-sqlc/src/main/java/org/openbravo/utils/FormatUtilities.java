@@ -11,13 +11,12 @@
  */
 package org.openbravo.utils;
 
-import javax.servlet.ServletException;
+import org.openbravo.exception.CryptoException;
 
-import org.apache.log4j.Logger;
+
 
 public class FormatUtilities {
 
-    static Logger log4j = Logger.getLogger(FormatUtilities.class);
 
     public static String truncate(String _s, int i) {
         String s = _s;
@@ -61,7 +60,7 @@ public class FormatUtilities {
                                 "\n", "\\n"), "\r", "").replace("<", "\\<").replace(">", "\\>");
     }
 
-    public static String sha1Base64(String text) throws ServletException {
+    public static String sha1Base64(String text) throws CryptoException {
         if (text == null || text.trim().equals("")) {
             return "";
         }
@@ -70,7 +69,7 @@ public class FormatUtilities {
         return result;
     }
 
-    public static String encryptDecrypt(String text, boolean encrypt) throws ServletException {
+    public static String encryptDecrypt(String text, boolean encrypt) throws CryptoException {
         if (text == null || text.trim().equals("")) {
             return "";
         }

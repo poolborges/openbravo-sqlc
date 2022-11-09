@@ -11,7 +11,6 @@
  */
 package org.openbravo.data;
 
-import javax.servlet.ServletException;
 
 /**
  * Interface implemented by java code generated for xsql-files if any SqlMethod
@@ -28,9 +27,9 @@ public interface ScrollableFieldProvider {
 
     public boolean hasData();
 
-    public boolean next() throws ServletException;
+    public boolean next() throws Exception;
 
-    public FieldProvider get() throws ServletException;
+    public FieldProvider get() throws Exception;
 
     public void close();
 

@@ -21,6 +21,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
@@ -29,13 +31,13 @@ import org.apache.commons.pool.KeyedObjectPoolFactory;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.commons.pool.impl.StackKeyedObjectPoolFactory;
-import org.apache.log4j.Logger;
+
 import org.openbravo.exception.NoConnectionAvailableException;
 import org.openbravo.exception.PoolNotFoundException;
 
 public class ConnectionProviderImpl implements ConnectionProvider {
 
-    static Logger log4j = Logger.getLogger(ConnectionProviderImpl.class);
+    static Logger LOGGER = Logger.getLogger(ConnectionProviderImpl.class.getName());
     String defaultPoolName = "";
     String bbdd = "";
     String rdbms = "";
@@ -68,14 +70,14 @@ public class ConnectionProviderImpl implements ConnectionProvider {
             properties.load(new FileInputStream(file));
             create(properties, isRelative, _context);
         } catch (IOException e) {
-            log4j.error("Error loading properties", e);
+            LOGGER.log(Level.SEVERE,"Error loading properties", e);
         }
     }
 
     private void create(Properties properties, boolean isRelative, String _context)
             throws PoolNotFoundException {
 
-        log4j.debug("Creating ConnectionProviderImpl");
+        LOGGER.finest("Creating ConnectionProviderImpl");
         if (_context != null && !_context.equals("")) {
             contextName = _context;
         }
@@ -106,18 +108,18 @@ public class ConnectionProviderImpl implements ConnectionProvider {
             dbServer += "/" + properties.getProperty("bbdd.sid");
         }
 
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("poolName: " + poolName);
-            log4j.debug("externalPoolClassName: " + externalPoolClassName);
-            log4j.debug("dbDriver: " + dbDriver);
-            log4j.debug("dbServer: " + dbServer);
-            log4j.debug("dbLogin: " + dbLogin);
-            log4j.debug("dbPassword: " + dbPassword);
-            log4j.debug("minConns: " + minConns);
-            log4j.debug("maxConns: " + maxConns);
-            log4j.debug("maxConnTime: " + Double.toString(maxConnTime));
-            log4j.debug("dbSessionConfig: " + dbSessionConfig);
-            log4j.debug("rdbms: " + _rdbms);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("poolName: " + poolName);
+            LOGGER.finest("externalPoolClassName: " + externalPoolClassName);
+            LOGGER.finest("dbDriver: " + dbDriver);
+            LOGGER.finest("dbServer: " + dbServer);
+            LOGGER.finest("dbLogin: " + dbLogin);
+            LOGGER.finest("dbPassword: " + dbPassword);
+            LOGGER.finest("minConns: " + minConns);
+            LOGGER.finest("maxConns: " + maxConns);
+            LOGGER.finest("maxConnTime: " + Double.toString(maxConnTime));
+            LOGGER.finest("dbSessionConfig: " + dbSessionConfig);
+            LOGGER.finest("rdbms: " + _rdbms);
         }
 
         if (externalPoolClassName != null && !"".equals(externalPoolClassName)) {
@@ -133,7 +135,7 @@ public class ConnectionProviderImpl implements ConnectionProvider {
             addNewPool(dbDriver, dbServer, dbLogin, dbPassword, minConns, maxConns, maxConnTime,
                     dbSessionConfig, _rdbms, poolName);
         } catch (Exception e) {
-            log4j.error(e);
+            LOGGER.log(Level.SEVERE,"",e);
             throw new PoolNotFoundException("Failed when creating database connections pool", e);
         }
     }
@@ -171,13 +173,13 @@ public class ConnectionProviderImpl implements ConnectionProvider {
             return;
         }
 
-        log4j.debug("Loading underlying JDBC driver.");
+        LOGGER.finest("Loading underlying JDBC driver.");
         try {
             Class.forName(dbDriver);
         } catch (ClassNotFoundException e) {
             throw new Exception(e);
         }
-        log4j.debug("Done.");
+        LOGGER.finest("Done.");
 
         GenericObjectPool connectionPool = new GenericObjectPool(null);
         connectionPool.setWhenExhaustedAction(GenericObjectPool.WHEN_EXHAUSTED_GROW);
@@ -209,7 +211,7 @@ public class ConnectionProviderImpl implements ConnectionProvider {
             PoolingDriver driver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
             connectionPool = driver.getConnectionPool(contextName + "_" + poolName);
         } catch (SQLException ex) {
-            log4j.error(ex);
+            LOGGER.log(Level.SEVERE,"",ex);
         }
         if (connectionPool == null) {
             throw new PoolNotFoundException(poolName + " not found");
@@ -287,7 +289,7 @@ public class ConnectionProviderImpl implements ConnectionProvider {
             conn = DriverManager
                     .getConnection("jdbc:apache:commons:dbcp:" + contextName + "_" + poolName);
         } catch (SQLException ex) {
-            log4j.error("Error getting connection", ex);
+            LOGGER.log(Level.SEVERE,"Error getting connection", ex);
             throw new NoConnectionAvailableException(
                     "There are no connections available in jdbc:apache:commons:dbcp:" + contextName + "_"
                     + poolName);
@@ -312,13 +314,13 @@ public class ConnectionProviderImpl implements ConnectionProvider {
                 // close connection if it's not attached to session, other case it
                 // will be closed when the
                 // request is done
-                log4j.debug("close connection directly (no connection in session)");
+                LOGGER.finest("close connection directly (no connection in session)");
                 if (!conn.isClosed()) {
                     conn.close();
                 }
             }
         } catch (Exception ex) {
-            log4j.error("Error on releaseConnection", ex);
+            LOGGER.log(Level.SEVERE,"Error on releaseConnection", ex);
             return false;
         }
         return true;
@@ -335,7 +337,7 @@ public class ConnectionProviderImpl implements ConnectionProvider {
             conn.setAutoCommit(true);
             conn.close();
         } catch (Exception ex) {
-            log4j.error("Error on closeConnection", ex);
+            LOGGER.log(Level.SEVERE,"Error on closeConnection", ex);
             return false;
         }
         return true;
@@ -382,9 +384,9 @@ public class ConnectionProviderImpl implements ConnectionProvider {
         if (poolName == null || poolName.equals("")) {
             throw new PoolNotFoundException("Can't get the pool. No pool name specified");
         }
-        log4j.debug("connection requested");
+        LOGGER.finest("connection requested");
         Connection conn = getConnection(poolName);
-        log4j.debug("connection established");
+        LOGGER.finest("connection established");
         return getPreparedStatement(conn, SQLPreparedStatement);
     }
 
@@ -395,12 +397,12 @@ public class ConnectionProviderImpl implements ConnectionProvider {
         }
         PreparedStatement ps = null;
         try {
-            log4j.debug("preparedStatement requested");
+            LOGGER.finest("preparedStatement requested");
             ps = conn.prepareStatement(SQLPreparedStatement, ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
-            log4j.debug("preparedStatement received");
+            LOGGER.finest("preparedStatement received");
         } catch (SQLException e) {
-            log4j.error("getPreparedStatement: " + SQLPreparedStatement + "\n" + e);
+            LOGGER.log(Level.SEVERE,"getPreparedStatement: " + SQLPreparedStatement + "\n" + e);
             releaseConnection(conn);
             throw e;
         }
@@ -429,7 +431,7 @@ public class ConnectionProviderImpl implements ConnectionProvider {
         try {
             cs = conn.prepareCall(SQLCallableStatement);
         } catch (SQLException e) {
-            log4j.error("getCallableStatement: " + SQLCallableStatement + "\n" + e);
+            LOGGER.log(Level.SEVERE,"getCallableStatement: " + SQLCallableStatement + "\n" + e);
             releaseConnection(conn);
             throw e;
         }
@@ -455,7 +457,7 @@ public class ConnectionProviderImpl implements ConnectionProvider {
         try {
             return (conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY));
         } catch (SQLException e) {
-            log4j.error("getStatement: " + e);
+            LOGGER.log(Level.SEVERE,"getStatement: " + e);
             releaseConnection(conn);
             throw e;
         }
@@ -471,7 +473,7 @@ public class ConnectionProviderImpl implements ConnectionProvider {
             preparedStatement.close();
             releaseConnection(conn);
         } catch (SQLException e) {
-            log4j.error("releasePreparedStatement: " + e);
+            LOGGER.log(Level.SEVERE,"releasePreparedStatement: " + e);
             releaseConnection(conn);
             throw e;
         }
@@ -487,7 +489,7 @@ public class ConnectionProviderImpl implements ConnectionProvider {
             callableStatement.close();
             releaseConnection(conn);
         } catch (SQLException e) {
-            log4j.error("releaseCallableStatement: " + e);
+            LOGGER.log(Level.SEVERE,"releaseCallableStatement: " + e);
             releaseConnection(conn);
             throw e;
         }
@@ -503,7 +505,7 @@ public class ConnectionProviderImpl implements ConnectionProvider {
             statement.close();
             releaseConnection(conn);
         } catch (SQLException e) {
-            log4j.error("releaseStatement: " + e);
+            LOGGER.log(Level.SEVERE,"releaseStatement: " + e);
             releaseConnection(conn);
             throw e;
         }

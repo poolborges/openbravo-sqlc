@@ -13,8 +13,10 @@ package org.openbravo.data;
 
 import java.util.Enumeration;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.apache.log4j.Logger;
+
 
 class Sql {
 
@@ -36,7 +38,7 @@ class Sql {
     String strSequenceName = null;
     boolean boolOptional = false;
     boolean saveContextInfo = true;
-    static Logger log4j = Logger.getLogger(Sql.class); // log4j
+    static Logger LOGGER = Logger.getLogger(Sql.class.getName()); // LOGGER
 
     public Sql() {
         vecParameter = new Vector<Parameter>();
@@ -45,35 +47,35 @@ class Sql {
 
     public Parameter addParameter(boolean sequence, String strName, String strDefault,
             String strInOut, String strOptional, String strAfter, String strText, String strIgnoreValue) {
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("addParameter sequence: " + sequence + " name: " + strName);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("addParameter sequence: " + sequence + " name: " + strName);
         }
         if (strOptional != null) {
             boolOptional = true;
         }
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("previous new Parameter");
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("previous new Parameter");
         }
         Parameter parameterNew = new Parameter(sequence, strName, strDefault, strInOut, strOptional,
                 strAfter, strText, strIgnoreValue);
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("called new Parameter");
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("called new Parameter");
         }
         for (Enumeration<Parameter> e = vecParameter.elements(); e.hasMoreElements();) {
             Parameter parameter = e.nextElement();
-            if (log4j.isDebugEnabled()) {
-                log4j.debug("parameter: " + parameter.strName);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.finest("parameter: " + parameter.strName);
             }
             if (parameter.strName.equals(strName)) {
                 parameterNew.boolRepeated = true;
             }
         }
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("previous new vecParameter.addElement");
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("previous new vecParameter.addElement");
         }
         vecParameter.addElement(parameterNew);
-        if (log4j.isDebugEnabled()) {
-            log4j.debug("called new vecParameter.addElement");
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("called new vecParameter.addElement");
         }
         return parameterNew;
     }

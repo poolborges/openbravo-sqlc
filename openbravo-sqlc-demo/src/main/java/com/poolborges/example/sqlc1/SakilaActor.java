@@ -3,8 +3,9 @@ package com.poolborges.example.sqlc1;
 
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.apache.log4j.Logger;
 
 import org.openbravo.data.FieldProvider;
 import org.openbravo.database.ConnectionProvider;
@@ -16,7 +17,7 @@ import org.openbravo.data.SqlcException;
  */
 public class SakilaActor implements FieldProvider {
 
-    static Logger log4j = Logger.getLogger(SakilaActor.class);
+    static Logger LOGGER = Logger.getLogger(SakilaActor.class.getName());
     private String InitRecordNumber = "0";
     public String actorId;
     public String firstName;
@@ -37,7 +38,7 @@ public class SakilaActor implements FieldProvider {
         } else if (fieldName.equalsIgnoreCase("last_update") || fieldName.equals("lastUpdate")) {
             return lastUpdate;
         } else {
-            log4j.debug("Field does not exist: " + fieldName);
+            LOGGER.log(Level.FINEST,"Field does not exist: " + fieldName);
             return null;
         }
     }
@@ -48,8 +49,7 @@ public class SakilaActor implements FieldProvider {
 
     public static SakilaActor[] selectAllActor(ConnectionProvider connectionProvider, int firstRegister, int numberRegisters) throws SqlcException {
         String strSql = "";
-        strSql = strSql
-                + "            SELECT actor_id, first_name, last_name, last_update FROM actor";
+        strSql = strSql + "SELECT actor_id, first_name, last_name, last_update FROM actor";
 
         ResultSet result;
         Vector<java.lang.Object> vector = new Vector<java.lang.Object>(0);
@@ -81,10 +81,10 @@ public class SakilaActor implements FieldProvider {
             }
             result.close();
         } catch (SQLException e) {
-            log4j.error("SQL error in query: " + strSql + "Exception:" + e);
+            LOGGER.log(Level.SEVERE,"SQL error in query: " + strSql + "Exception:" + e);
             throw new SqlcException("@CODE=" + Integer.toString(e.getErrorCode()) + "@" + e.getMessage());
         } catch (Exception ex) {
-            log4j.error("Exception in query: " + strSql + "Exception:" + ex);
+            LOGGER.log(Level.SEVERE,"Exception in query: " + strSql + "Exception:" + ex);
             throw new SqlcException("@CODE=@" + ex.getMessage());
         } finally {
             try {
@@ -143,10 +143,10 @@ public class SakilaActor implements FieldProvider {
             }
             result.close();
         } catch (SQLException e) {
-            log4j.error("SQL error in query: " + strSql + "Exception:" + e);
+            LOGGER.log(Level.SEVERE,"SQL error in query: " + strSql + "Exception:" + e);
             throw new SqlcException("@CODE=" + Integer.toString(e.getErrorCode()) + "@" + e.getMessage());
         } catch (Exception ex) {
-            log4j.error("Exception in query: " + strSql + "Exception:" + ex);
+            LOGGER.log(Level.SEVERE,"Exception in query: " + strSql + "Exception:" + ex);
             throw new SqlcException("@CODE=@" + ex.getMessage());
         } finally {
             try {
